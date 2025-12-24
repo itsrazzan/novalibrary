@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Waiting List - Nova Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f3e8ff 100%);
+            min-height: 100vh;
+        }
+
+        .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .book-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .book-card:nth-child(1) { animation-delay: 0.1s; }
+        .book-card:nth-child(2) { animation-delay: 0.2s; }
+        .book-card:nth-child(3) { animation-delay: 0.3s; }
+        .book-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -12px rgba(124, 58, 237, 0.35);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -8px rgba(124, 58, 237, 0.5);
+        }
+
+        .queue-number {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-white/90 backdrop-blur-lg shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <!-- Back Button -->
+                    <button onclick="window.location.href='dashboard.html'" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                    </button>
+                    <!-- Logo -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 gradient-purple rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">Nova Academy</span>
+                    </div>
+                </div>
+
+                <!-- User Info -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 gradient-purple rounded-full flex items-center justify-center shadow-lg">
+                        <span class="text-white font-bold" id="userInitial">U</span>
+                    </div>
+                    <span class="hidden md:block text-sm font-semibold text-gray-900" id="userName">User</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-3">
+                    Buku <span class="gradient-text">Waiting List</span>
+                </h1>
+                <p class="text-xl text-gray-600">Daftar buku yang sedang Anda tunggu ketersediaannya</p>
+            </div>
+
+            <!-- Info Banner -->
+            <div class="bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-400 rounded-xl p-6 mb-8">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-semibold text-orange-900 mb-1">Informasi Waiting List</h3>
+                        <p class="text-sm text-orange-700">Anda akan mendapat notifikasi ketika buku yang Anda tunggu sudah tersedia untuk dipinjam. Pastikan notifikasi email Anda aktif.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-semibold text-gray-600">Total Waiting</h3>
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="totalWaiting">0</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-semibold text-gray-600">Posisi Terdepan</h3>
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="topPosition">0</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-semibold text-gray-600">Rata-rata Waktu</h3>
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="avgWait">0 <span class="text-base font-normal text-gray-600">hari</span></p>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden text-center py-12">
+                <svg class="animate-spin h-12 w-12 mx-auto text-purple-600 mb-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-600">Memuat data...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden bg-white rounded-2xl shadow-lg p-12 text-center">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-3">Belum Ada Buku di Waiting List</h3>
+                <p class="text-gray-600 mb-6">Tambahkan buku yang sedang tidak tersedia ke waiting list untuk mendapat notifikasi saat tersedia</p>
+                <button onclick="window.location.href='dashboard.html'" class="btn-primary px-8 py-3 text-white rounded-xl font-semibold">
+                    Cari Buku
+                </button>
+            </div>
+
+            <!-- Books List -->
+            <div id="booksList" class="space-y-6">
+                <!-- Books will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Load User Info
+        function loadUserInfo() {
+            const username = localStorage.getItem('username') || sessionStorage.getItem('username');
+            const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
+            if (!authToken) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const userName = username || 'User';
+            const initial = userName.charAt(0).toUpperCase();
+
+            document.getElementById('userInitial').textContent = initial;
+            document.getElementById('userName').textContent = userName;
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('id-ID', options);
+        }
+
+        // Calculate days waiting
+        function calculateDaysWaiting(requestDate) {
+            const today = new Date();
+            const request = new Date(requestDate);
+            const diffTime = today - request;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        // Get queue position color
+        function getQueueColor(position) {
+            if (position === 1) return { bg: 'bg-green-100', text: 'text-green-700' };
+            if (position <= 3) return { bg: 'bg-blue-100', text: 'text-blue-700' };
+            if (position <= 5) return { bg: 'bg-yellow-100', text: 'text-yellow-700' };
+            return { bg: 'bg-orange-100', text: 'text-orange-700' };
+        }
+
+        // Get estimated availability
+        function getEstimatedAvailability(position, avgDays) {
+            const estimated = position * avgDays;
+            if (estimated <= 7) return 'Sekitar ' + estimated + ' hari';
+            if (estimated <= 30) return 'Sekitar ' + Math.ceil(estimated / 7) + ' minggu';
+            return 'Sekitar ' + Math.ceil(estimated / 30) + ' bulan';
+        }
+
+        // Render waiting list books
+        function renderWaitingBooks(books) {
+            const booksList = document.getElementById('booksList');
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingState.classList.add('hidden');
+
+            if (books.length === 0) {
+                emptyState.classList.remove('hidden');
+                booksList.innerHTML = '';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            booksList.innerHTML = books.map(function(book) {
+                const daysWaiting = calculateDaysWaiting(book.requestDate);
+                const queueColor = getQueueColor(book.queuePosition);
+                const estimated = getEstimatedAvailability(book.queuePosition, 5);
+                const isFirstInQueue = book.queuePosition === 1;
+
+                return '<div class="book-card bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100' + (isFirstInQueue ? ' border-green-300' : '') + '">' +
+                    (isFirstInQueue ? '<div class="mb-4 px-4 py-2 bg-green-50 border-l-4 border-green-400 rounded-lg"><p class="text-sm font-semibold text-green-700 flex items-center gap-2"><span class="pulse-animation">🟢</span> Anda berikutnya! Segera tersedia</p></div>' : '') +
+                    '<div class="flex flex-col md:flex-row gap-6">' +
+                        '<img src="' + book.cover + '" alt="' + book.title + '" class="w-full md:w-32 h-48 object-cover rounded-xl shadow-md">' +
+                        '<div class="flex-1">' +
+                            '<div class="flex flex-col md:flex-row md:items-start md:justify-between mb-4">' +
+                                '<div class="flex-1 mb-4 md:mb-0">' +
+                                    '<h3 class="text-2xl font-bold text-gray-900 mb-2">' + book.title + '</h3>' +
+                                    '<p class="text-gray-600 mb-1">Oleh: <span class="font-semibold">' + book.author + '</span></p>' +
+                                    '<p class="text-sm text-gray-500">ISBN: ' + book.isbn + '</p>' +
+                                '</div>' +
+                                '<div class="queue-number ' + queueColor.bg + ' ' + queueColor.text + '">' +
+                                    book.queuePosition +
+                                '</div>' +
+                            '</div>' +
+                            
+                            '<div class="grid md:grid-cols-3 gap-4 mb-4">' +
+                                '<div class="bg-gray-50 rounded-xl p-4">' +
+                                    '<p class="text-xs text-gray-500 mb-1">Posisi Antrian</p>' +
+                                    '<p class="font-bold text-gray-900 text-lg">#' + book.queuePosition + ' dari ' + book.totalQueue + '</p>' +
+                                '</div>' +
+                                '<div class="bg-gray-50 rounded-xl p-4">' +
+                                    '<p class="text-xs text-gray-500 mb-1">Menunggu Sejak</p>' +
+                                    '<p class="font-semibold text-gray-900">' + daysWaiting + ' hari yang lalu</p>' +
+                                '</div>' +
+                                '<div class="bg-gray-50 rounded-xl p-4">' +
+                                    '<p class="text-xs text-gray-500 mb-1">Estimasi Tersedia</p>' +
+                                    '<p class="font-semibold text-gray-900">' + estimated + '</p>' +
+                                '</div>' +
+                            '</div>' +
+
+                            '<div class="bg-blue-50 rounded-xl p-4 mb-4">' +
+                                '<div class="flex items-start gap-3">' +
+                                    '<svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>' +
+                                    '</svg>' +
+                                    '<div class="flex-1">' +
+                                        '<p class="text-sm text-blue-900 font-semibold mb-1">Status Buku</p>' +
+                                        '<p class="text-sm text-blue-700">' + book.currentBorrower + ' sedang meminjam buku ini. Akan dikembalikan pada ' + formatDate(book.expectedReturnDate) + '</p>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+
+                            '<div class="flex flex-col sm:flex-row gap-3">' +
+                                '<button onclick="viewBookDetail(' + book.id + ')" class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2">' +
+                                    '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>' +
+                                    'Lihat Detail' +
+                                '</button>' +
+                                '<button onclick="cancelWaiting(' + book.id + ', \'' + book.title + '\')" class="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2">' +
+                                    '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>' +
+                                    'Batalkan' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            // Update summary
+            updateSummary(books);
+        }
+
+        // Update summary stats
+        function updateSummary(books) {
+            const totalWaiting = books.length;
+            const topPosition = books.length > 0 ? Math.min.apply(Math, books.map(function(b) { return b.queuePosition; })) : 0;
+            
+            // Calculate average wait time
+            let totalDays = 0;
+            books.forEach(function(book) {
+                totalDays += calculateDaysWaiting(book.requestDate);
+            });
+            const avgWait = books.length > 0 ? Math.round(totalDays / books.length) : 0;
+
+            document.getElementById('totalWaiting').textContent = totalWaiting;
+            document.getElementById('topPosition').textContent = topPosition;
+            document.getElementById('avgWait').textContent = avgWait;
+        }
+
+        // View book detail
+        function viewBookDetail(bookId) {
+            alert('Fitur detail buku akan tersedia setelah integrasi dengan backend.\nBuku ID: ' + bookId);
+        }
+
+        // Cancel waiting
+        function cancelWaiting(bookId, bookTitle) {
+            if (confirm('Apakah Anda yakin ingin membatalkan waiting list untuk buku "' + bookTitle + '"?')) {
+                alert('Fitur pembatalan akan tersedia setelah integrasi dengan backend.\nBuku ID: ' + bookId);
+                // After cancellation, reload the list
+                // loadWaitingList();
+            }
+        }
+
+        // Load waiting list from database
+        async function loadWaitingList() {
+            const loadingState = document.getElementById('loadingState');
+            loadingState.classList.remove('hidden');
+
+            try {
+                // Connect to database API
+                /*
+                const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                const response = await fetch('api/waiting-list.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
+                const data = await response.json();
+                renderWaitingBooks(data.books);
+                */
+
+                // DEMO: Sample data
+                await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+
+                const sampleBooks = [
+                    {
+                        id: 1,
+                        title: 'Educated: A Memoir',
+                        author: 'Tara Westover',
+                        isbn: '9780399590504',
+                        cover: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=600&fit=crop',
+                        requestDate: '2024-12-20',
+                        queuePosition: 1,
+                        totalQueue: 5,
+                        currentBorrower: 'John Doe',
+                        expectedReturnDate: '2024-12-26'
+                    },
+                    {
+                        id: 2,
+                        title: 'Atomic Habits',
+                        author: 'James Clear',
+                        isbn: '9780735211292',
+                        cover: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&h=600&fit=crop',
+                        requestDate: '2024-12-18',
+                        queuePosition: 3,
+                        totalQueue: 8,
+                        currentBorrower: 'Jane Smith',
+                        expectedReturnDate: '2024-12-28'
+                    },
+                    {
+                        id: 3,
+                        title: 'The Psychology of Money',
+                        author: 'Morgan Housel',
+                        isbn: '9780857197689',
+                        cover: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&h=600&fit=crop',
+                        requestDate: '2024-12-15',
+                        queuePosition: 6,
+                        totalQueue: 10,
+                        currentBorrower: 'Bob Wilson',
+                        expectedReturnDate: '2025-01-02'
+                    }
+                ];
+
+                renderWaitingBooks(sampleBooks);
+
+            } catch (error) {
+                console.error('Error loading waiting list:', error);
+                loadingState.classList.add('hidden');
+                alert('Terjadi kesalahan saat memuat data');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadWaitingList();
+        });
+    </script>
+</body>
+</html>

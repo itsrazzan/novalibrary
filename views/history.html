@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Peminjaman - Nova Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f3e8ff 100%);
+            min-height: 100vh;
+        }
+
+        .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .history-card {
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .history-card:nth-child(1) { animation-delay: 0.1s; }
+        .history-card:nth-child(2) { animation-delay: 0.15s; }
+        .history-card:nth-child(3) { animation-delay: 0.2s; }
+        .history-card:nth-child(4) { animation-delay: 0.25s; }
+        .history-card:nth-child(5) { animation-delay: 0.3s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .history-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 10px 30px -5px rgba(124, 58, 237, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -8px rgba(124, 58, 237, 0.5);
+        }
+
+        .filter-btn {
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            color: white;
+        }
+
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            left: -6px;
+            top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-white/90 backdrop-blur-lg shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <!-- Back Button -->
+                    <button onclick="window.location.href='dashboard.html'" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                    </button>
+                    <!-- Logo -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 gradient-purple rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">Nova Academy</span>
+                    </div>
+                </div>
+
+                <!-- User Info -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 gradient-purple rounded-full flex items-center justify-center shadow-lg">
+                        <span class="text-white font-bold" id="userInitial">U</span>
+                    </div>
+                    <span class="hidden md:block text-sm font-semibold text-gray-900" id="userName">User</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-3">
+                    Riwayat <span class="gradient-text">Peminjaman</span>
+                </h1>
+                <p class="text-xl text-gray-600">Lihat semua aktivitas peminjaman buku Anda</p>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-semibold text-gray-600">Total Peminjaman</h3>
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="totalHistory">0</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-semibold text-gray-600">Dikembalikan</h3>
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="returnedCount">0</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-semibold text-gray-600">Tepat Waktu</h3>
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="onTimeCount">0</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-semibold text-gray-600">Terlambat</h3>
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="lateCount">0</p>
+                </div>
+            </div>
+
+            <!-- Filter & Search -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border-2 border-gray-100">
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <!-- Filter Buttons -->
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="filterHistory('all')" class="filter-btn active px-6 py-2 rounded-xl font-semibold border-2 border-gray-200 hover:border-purple-300 transition" id="filterAll">
+                            Semua
+                        </button>
+                        <button onclick="filterHistory('returned')" class="filter-btn px-6 py-2 rounded-xl font-semibold border-2 border-gray-200 hover:border-purple-300 transition" id="filterReturned">
+                            Dikembalikan
+                        </button>
+                        <button onclick="filterHistory('ontime')" class="filter-btn px-6 py-2 rounded-xl font-semibold border-2 border-gray-200 hover:border-purple-300 transition" id="filterOntime">
+                            Tepat Waktu
+                        </button>
+                        <button onclick="filterHistory('late')" class="filter-btn px-6 py-2 rounded-xl font-semibold border-2 border-gray-200 hover:border-purple-300 transition" id="filterLate">
+                            Terlambat
+                        </button>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="relative w-full md:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Cari judul atau penulis..."
+                            class="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden text-center py-12">
+                <svg class="animate-spin h-12 w-12 mx-auto text-purple-600 mb-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-600">Memuat data...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden bg-white rounded-2xl shadow-lg p-12 text-center">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-3">Belum Ada Riwayat Peminjaman</h3>
+                <p class="text-gray-600 mb-6">Mulai pinjam buku untuk melihat riwayat peminjaman Anda</p>
+                <button onclick="window.location.href='dashboard.html'" class="btn-primary px-8 py-3 text-white rounded-xl font-semibold">
+                    Cari Buku
+                </button>
+            </div>
+
+            <!-- History Timeline -->
+            <div id="historyList" class="space-y-4">
+                <!-- History items will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let allHistory = [];
+        let currentFilter = 'all';
+
+        // Load User Info
+        function loadUserInfo() {
+            const username = localStorage.getItem('username') || sessionStorage.getItem('username');
+            const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
+            if (!authToken) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const userName = username || 'User';
+            const initial = userName.charAt(0).toUpperCase();
+
+            document.getElementById('userInitial').textContent = initial;
+            document.getElementById('userName').textContent = userName;
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('id-ID', options);
+        }
+
+        // Calculate duration
+        function calculateDuration(borrowDate, returnDate) {
+            const borrow = new Date(borrowDate);
+            const returned = new Date(returnDate);
+            const diffTime = returned - borrow;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        // Check if late
+        function isLate(dueDate, returnDate) {
+            const due = new Date(dueDate);
+            const returned = new Date(returnDate);
+            return returned > due;
+        }
+
+        // Get status info
+        function getStatusInfo(status, dueDate, returnDate) {
+            if (status === 'returned') {
+                const late = isLate(dueDate, returnDate);
+                if (late) {
+                    const days = calculateDuration(dueDate, returnDate);
+                    return {
+                        text: 'Terlambat ' + days + ' hari',
+                        class: 'bg-red-100 text-red-700 border-red-200',
+                        icon: '⚠️',
+                        type: 'late'
+                    };
+                } else {
+                    return {
+                        text: 'Tepat Waktu',
+                        class: 'bg-green-100 text-green-700 border-green-200',
+                        icon: '✓',
+                        type: 'ontime'
+                    };
+                }
+            }
+            return {
+                text: 'Sedang Dipinjam',
+                class: 'bg-blue-100 text-blue-700 border-blue-200',
+                icon: '📖',
+                type: 'borrowed'
+            };
+        }
+
+        // Render history items
+        function renderHistory(histories) {
+            const historyList = document.getElementById('historyList');
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingState.classList.add('hidden');
+
+            if (histories.length === 0) {
+                emptyState.classList.remove('hidden');
+                historyList.innerHTML = '';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            historyList.innerHTML = histories.map(function(item) {
+                const status = getStatusInfo(item.status, item.dueDate, item.returnDate);
+                const duration = item.returnDate ? calculateDuration(item.borrowDate, item.returnDate) : calculateDuration(item.borrowDate, new Date().toISOString().split('T')[0]);
+
+                return '<div class="history-card bg-white rounded-2xl shadow-lg border-2 border-gray-100 hover:border-purple-200 overflow-hidden">' +
+                    '<div class="flex flex-col md:flex-row">' +
+                        '<div class="md:w-1/4 relative">' +
+                            '<img src="' + item.cover + '" alt="' + item.title + '" class="w-full h-64 md:h-full object-cover">' +
+                            '<div class="absolute top-4 left-4">' +
+                                '<span class="px-3 py-1 rounded-full text-xs font-semibold border-2 ' + status.class + '">' +
+                                    status.icon + ' ' + status.text +
+                                '</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="flex-1 p-6">' +
+                            '<div class="mb-4">' +
+                                '<h3 class="text-2xl font-bold text-gray-900 mb-2">' + item.title + '</h3>' +
+                                '<p class="text-gray-600 mb-1">Oleh: <span class="font-semibold">' + item.author + '</span></p>' +
+                                '<p class="text-sm text-gray-500">ISBN: ' + item.isbn + '</p>' +
+                            '</div>' +
+                            
+                            '<div class="grid md:grid-cols-3 gap-4 mb-4">' +
+                                '<div class="bg-gray-50 rounded-xl p-4 relative border-l-4 border-blue-400">' +
+                                    '<span class="timeline-dot bg-blue-400"></span>' +
+                                    '<p class="text-xs text-gray-500 mb-1">Tanggal Pinjam</p>' +
+                                    '<p class="font-semibold text-gray-900">' + formatDate(item.borrowDate) + '</p>' +
+                                '</div>' +
+                                '<div class="bg-gray-50 rounded-xl p-4 relative border-l-4 ' + (item.returnDate ? 'border-green-400' : 'border-orange-400') + '">' +
+                                    '<span class="timeline-dot ' + (item.returnDate ? 'bg-green-400' : 'bg-orange-400') + '"></span>' +
+                                    '<p class="text-xs text-gray-500 mb-1">' + (item.returnDate ? 'Tanggal Dikembalikan' : 'Jatuh Tempo') + '</p>' +
+                                    '<p class="font-semibold text-gray-900">' + formatDate(item.returnDate || item.dueDate) + '</p>' +
+                                '</div>' +
+                                '<div class="bg-gray-50 rounded-xl p-4">' +
+                                    '<p class="text-xs text-gray-500 mb-1">Durasi Peminjaman</p>' +
+                                    '<p class="font-semibold text-gray-900">' + duration + ' hari</p>' +
+                                '</div>' +
+                            '</div>' +
+
+                            '<div class="flex flex-col sm:flex-row gap-3">' +
+                                '<button onclick="viewBookDetail(' + item.bookId + ')" class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2">' +
+                                    '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>' +
+                                    'Lihat Detail Buku' +
+                                '</button>' +
+                                (item.returnDate ? 
+                                    '<button onclick="borrowAgain(' + item.bookId + ', \'' + item.title + '\')" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2">' +
+                                        '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>' +
+                                        'Pinjam Lagi' +
+                                    '</button>' : 
+                                    '<button disabled class="flex-1 px-6 py-3 bg-gray-300 text-gray-500 rounded-xl font-semibold cursor-not-allowed">' +
+                                        'Sedang Dipinjam' +
+                                    '</button>'
+                                ) +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            // Update summary
+            updateSummary();
+        }
+
+        // Filter history
+        function filterHistory(type) {
+            currentFilter = type;
+
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            document.getElementById('filter' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+
+            // Filter data
+            let filtered = allHistory;
+            if (type === 'returned') {
+                filtered = allHistory.filter(function(item) {
+                    return item.status === 'returned';
+                });
+            } else if (type === 'ontime') {
+                filtered = allHistory.filter(function(item) {
+                    return item.status === 'returned' && !isLate(item.dueDate, item.returnDate);
+                });
+            } else if (type === 'late') {
+                filtered = allHistory.filter(function(item) {
+                    return item.status === 'returned' && isLate(item.dueDate, item.returnDate);
+                });
+            }
+
+            renderHistory(filtered);
+        }
+
+        // Search history
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            
+            if (query === '') {
+                filterHistory(currentFilter);
+                return;
+            }
+
+            const filtered = allHistory.filter(function(item) {
+                return item.title.toLowerCase().includes(query) || 
+                       item.author.toLowerCase().includes(query);
+            });
+
+            renderHistory(filtered);
+        });
+
+        // Update summary
+        function updateSummary() {
+            const total = allHistory.length;
+            const returned = allHistory.filter(function(item) {
+                return item.status === 'returned';
+            }).length;
+            const onTime = allHistory.filter(function(item) {
+                return item.status === 'returned' && !isLate(item.dueDate, item.returnDate);
+            }).length;
+            const late = allHistory.filter(function(item) {
+                return item.status === 'returned' && isLate(item.dueDate, item.returnDate);
+            }).length;
+
+            document.getElementById('totalHistory').textContent = total;
+            document.getElementById('returnedCount').textContent = returned;
+            document.getElementById('onTimeCount').textContent = onTime;
+            document.getElementById('lateCount').textContent = late;
+        }
+
+        // View book detail
+        function viewBookDetail(bookId) {
+            alert('Fitur detail buku akan tersedia setelah integrasi dengan backend.\nBuku ID: ' + bookId);
+        }
+
+        // Borrow again
+        function borrowAgain(bookId, bookTitle) {
+            if (confirm('Apakah Anda ingin meminjam buku "' + bookTitle + '" lagi?')) {
+                alert('Fitur peminjaman ulang akan tersedia setelah integrasi dengan backend.\nBuku ID: ' + bookId);
+            }
+        }
+
+        // Load history from database
+        async function loadHistory() {
+            const loadingState = document.getElementById('loadingState');
+            loadingState.classList.remove('hidden');
+
+            try {
+                // Connect to database API
+                /*
+                const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                const response = await fetch('api/borrowing-history.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
+                const data = await response.json();
+                allHistory = data.history;
+                renderHistory(allHistory);
+                */
+
+                // DEMO: Sample data
+                await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+
+                allHistory = [
+                    {
+                        id: 1,
+                        bookId: 1,
+                        title: 'Laskar Pelangi',
+                        author: 'Andrea Hirata',
+                        isbn: '9789793062792',
+                        cover: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop',
+                        borrowDate: '2024-11-15',
+                        dueDate: '2024-12-01',
+                        returnDate: '2024-11-30',
+                        status: 'returned'
+                    },
+                    {
+                        id: 2,
+                        bookId: 2,
+                        title: 'Bumi Manusia',
+                        author: 'Pramoedya Ananta Toer',
+                        isbn: '9789799731234',
+                        cover: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop',
+                        borrowDate: '2024-11-01',
+                        dueDate: '2024-11-20',
+                        returnDate: '2024-11-25',
+                        status: 'returned'
+                    },
+                    {
+                        id: 3,
+                        bookId: 3,
+                        title: 'Negeri 5 Menara',
+                        author: 'Ahmad Fuadi',
+                        isbn: '9789791227742',
+                        cover: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop',
+                        borrowDate: '2024-10-20',
+                        dueDate: '2024-11-05',
+                        returnDate: '2024-11-03',
+                        status: 'returned'
+                    },
+                    {
+                        id: 4,
+                        bookId: 4,
+                        title: 'Sang Pemimpi',
+                        author: 'Andrea Hirata',
+                        isbn: '9789793062808',
+                        cover: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=600&fit=crop',
+                        borrowDate: '2024-10-01',
+                        dueDate: '2024-10-15',
+                        returnDate: '2024-10-20',
+                        status: 'returned'
+                    },
+                    {
+                        id: 5,
+                        bookId: 5,
+                        title: 'Cantik Itu Luka',
+                        author: 'Eka Kurniawan',
+                        isbn: '9786024246945',
+                        cover: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&h=600&fit=crop',
+                        borrowDate: '2024-09-15',
+                        dueDate: '2024-09-30',
+                        returnDate: '2024-09-28',
+                        status: 'returned'
+                    }
+                ];
+
+                renderHistory(allHistory);
+
+            } catch (error) {
+                console.error('Error loading history:', error);
+                loadingState.classList.add('hidden');
+                alert('Terjadi kesalahan saat memuat data');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadHistory();
+        });
+    </script>
+</body>
+</html>
