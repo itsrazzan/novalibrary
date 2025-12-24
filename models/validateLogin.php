@@ -6,5 +6,6 @@ note for dhiya :
 <?php
 function loginCheck($username, $password) {
     // isi logic untuk mengecek username dan password di database
+
 }
 ?>
