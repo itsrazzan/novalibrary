@@ -1,0 +1,182 @@
+* {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .gradient-bg {
+        background: linear-gradient(
+          135deg,
+          #667eea 0%,
+          #764ba2 50%,
+          #f093fb 100%
+        );
+        min-height: 100vh;
+      }
+
+      .gradient-purple {
+        background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+      }
+
+      .gradient-text {
+        background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .login-card {
+        backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.95);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .login-card:hover {
+        box-shadow: 0 30px 60px -12px rgba(124, 58, 237, 0.4);
+        transform: translateY(-5px);
+      }
+
+      .input-field {
+        transition: all 0.3s ease;
+      }
+
+      .input-field:focus {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px -4px rgba(124, 58, 237, 0.3);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-primary::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn-primary:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px -8px rgba(124, 58, 237, 0.6);
+      }
+
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+
+      .social-btn {
+        transition: all 0.3s ease;
+        border: 2px solid #e5e7eb;
+      }
+
+      .social-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+        border-color: #7c3aed;
+      }
+
+      .floating-shape {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.1;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-20px) rotate(180deg);
+        }
+      }
+
+      .shape-1 {
+        width: 200px;
+        height: 200px;
+        background: white;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+
+      .shape-2 {
+        width: 150px;
+        height: 150px;
+        background: white;
+        bottom: 20%;
+        right: 15%;
+        animation-delay: 2s;
+      }
+
+      .shape-3 {
+        width: 100px;
+        height: 100px;
+        background: white;
+        top: 60%;
+        left: 15%;
+        animation-delay: 4s;
+      }
+
+      .checkbox-custom:checked {
+        background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+      }
+
+      .error-shake {
+        animation: shake 0.5s;
+      }
+
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-10px);
+        }
+        75% {
+          transform: translateX(10px);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.6s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .logo-glow {
+        filter: drop-shadow(0 4px 20px rgba(124, 58, 237, 0.4));
+      }

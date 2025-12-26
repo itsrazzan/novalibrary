@@ -1,3 +1,45 @@
+<?php
+/**
+ * User Dashboard
+ * Displays member profile and library functions
+ * Requires: Member session authentication
+ */
+
+// Start session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Include helpers
+require_once __DIR__ . '/../../config/helpers.php';
+
+// Check if user is logged in
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: ' . getRedirectUrl('views/login.php'));
+    exit;
+}
+
+// Check if user is member
+if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'member' && $_SESSION['role'] !== 'user')) {
+    header('Location: ' . getRedirectUrl('views/login.php'));
+    exit;
+}
+
+// Get user info from session
+$userId = $_SESSION['user_id'] ?? null;
+$userRole = $_SESSION['role'] ?? 'member';
+
+// Verify user ID exists
+if (!$userId) {
+    session_destroy();
+    header('Location: ' . getRedirectUrl('views/login.php'));
+    exit;
+}
+
+// Get user name (can be stored in session or fetched from DB)
+$userName = $_SESSION['username'] ?? 'Member';
+$userInitial = strtoupper(substr($userName, 0, 1));
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -5,131 +47,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Nova Academy Library</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f3e8ff 100%);
-            min-height: 100vh;
-        }
-
-        .gradient-purple {
-            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .card-hover {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px -12px rgba(124, 58, 237, 0.35);
-        }
-
-        .search-box {
-            transition: all 0.3s ease;
-        }
-
-        .search-box:focus-within {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px -8px rgba(124, 58, 237, 0.3);
-        }
-
-        .logo-container {
-            animation: fadeInScale 0.6s ease-out;
-        }
-
-        @keyframes fadeInScale {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .dashboard-card {
-            animation: fadeInUp 0.6s ease-out forwards;
-            opacity: 0;
-        }
-
-        .dashboard-card:nth-child(1) { animation-delay: 0.1s; }
-        .dashboard-card:nth-child(2) { animation-delay: 0.2s; }
-        .dashboard-card:nth-child(3) { animation-delay: 0.3s; }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .profile-dropdown {
-            display: none;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        .profile-dropdown.show {
-            display: block;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .search-results {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .search-results::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .search-results::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        .search-results::-webkit-scrollbar-thumb {
-            background: #7c3aed;
-            border-radius: 10px;
-        }
-
-        .book-result-item {
-            transition: all 0.2s ease;
-        }
-
-        .book-result-item:hover {
-            background: #f9fafb;
-            transform: translateX(5px);
-        }
-    </style>
+    <link rel="stylesheet" href="<?php echo getAssetUrl('public/css/dashboard.css'); ?>">
 </head>
 <body>
     <!-- Navbar -->
@@ -150,10 +68,10 @@
                 <div class="relative">
                     <button id="profileBtn" class="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all">
                         <div class="w-10 h-10 gradient-purple rounded-full flex items-center justify-center shadow-lg">
-                            <span class="text-white font-bold" id="userInitial">U</span>
+                            <span class="text-white font-bold"><?php echo $userInitial; ?></span>
                         </div>
                         <div class="hidden md:block text-left">
-                            <p class="text-sm font-semibold text-gray-900" id="userName">Loading...</p>
+                            <p class="text-sm font-semibold text-gray-900"><?php echo htmlspecialchars($userName); ?></p>
                             <p class="text-xs text-gray-500">Member</p>
                         </div>
                         <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,8 +82,8 @@
                     <!-- Dropdown Menu -->
                     <div id="profileDropdown" class="profile-dropdown absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2">
                         <div class="px-4 py-3 border-b border-gray-100">
-                            <p class="text-sm font-semibold text-gray-900" id="dropdownUserName">User Name</p>
-                            <p class="text-xs text-gray-500" id="dropdownUserEmail">user@email.com</p>
+                            <p class="text-sm font-semibold text-gray-900"><?php echo htmlspecialchars($userName); ?></p>
+                            <p class="text-xs text-gray-500"><?php echo htmlspecialchars($userName); ?>@novaacademy.id</p>
                         </div>
                         <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 transition">
                             <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,170 +227,6 @@
         </div>
     </main>
 
-    <script>
-        // User Session & Profile
-        function loadUserProfile() {
-            const username = localStorage.getItem('username') || sessionStorage.getItem('username');
-            const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-
-            if (!authToken) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const userName = username || 'User';
-            const userEmail = username + '@novaacademy.id';
-            const initial = userName.charAt(0).toUpperCase();
-
-            document.getElementById('userInitial').textContent = initial;
-            document.getElementById('userName').textContent = userName;
-            document.getElementById('dropdownUserName').textContent = userName;
-            document.getElementById('dropdownUserEmail').textContent = userEmail;
-        }
-
-        // Profile Dropdown
-        document.getElementById('profileBtn').addEventListener('click', function(e) {
-            e.stopPropagation();
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('show');
-        });
-
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('profileDropdown');
-            const profileBtn = document.getElementById('profileBtn');
-            if (!profileBtn.contains(e.target)) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // Logout
-        function logout() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('username');
-            sessionStorage.removeItem('authToken');
-            sessionStorage.removeItem('username');
-            window.location.href = 'login.html';
-        }
-
-        // Search Books
-        const searchInput = document.getElementById('searchInput');
-        const searchResults = document.getElementById('searchResults');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const searchLoading = document.getElementById('searchLoading');
-        let searchTimeout;
-
-        searchInput.addEventListener('input', function(e) {
-            const query = e.target.value.trim();
-            clearTimeout(searchTimeout);
-
-            if (query.length < 3) {
-                searchResults.classList.add('hidden');
-                searchLoading.classList.add('hidden');
-                return;
-            }
-
-            searchLoading.classList.remove('hidden');
-            searchResults.classList.add('hidden');
-
-            searchTimeout = setTimeout(function() {
-                searchBooks(query);
-            }, 500);
-        });
-
-        async function searchBooks(query) {
-            try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                const sampleBooks = [
-                    {
-                        id: 1,
-                        title: 'Laskar Pelangi',
-                        author: 'Andrea Hirata',
-                        isbn: '9789793062792',
-                        available: true,
-                        cover: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=200&h=300&fit=crop'
-                    },
-                    {
-                        id: 2,
-                        title: 'Bumi Manusia',
-                        author: 'Pramoedya Ananta Toer',
-                        isbn: '9789799731234',
-                        available: false,
-                        cover: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=200&h=300&fit=crop'
-                    },
-                    {
-                        id: 3,
-                        title: 'Negeri 5 Menara',
-                        author: 'Ahmad Fuadi',
-                        isbn: '9789791227742',
-                        available: true,
-                        cover: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=200&h=300&fit=crop'
-                    }
-                ];
-
-                const filtered = sampleBooks.filter(function(book) {
-                    return book.title.toLowerCase().includes(query.toLowerCase()) ||
-                           book.author.toLowerCase().includes(query.toLowerCase()) ||
-                           book.isbn.includes(query);
-                });
-
-                displaySearchResults(filtered);
-
-            } catch (error) {
-                console.error('Search error:', error);
-                displaySearchResults([]);
-            }
-        }
-
-        function displaySearchResults(books) {
-            searchLoading.classList.add('hidden');
-
-            if (books.length === 0) {
-                resultsContainer.innerHTML = '<div class="text-center py-8"><svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p class="text-gray-500">Buku tidak ditemukan</p></div>';
-                searchResults.classList.remove('hidden');
-                return;
-            }
-
-            resultsContainer.innerHTML = books.map(function(book) {
-                return '<div class="book-result-item flex items-start space-x-4 p-4 rounded-xl cursor-pointer mb-2" onclick="selectBook(' + book.id + ')"><img src="' + book.cover + '" alt="' + book.title + '" class="w-16 h-24 object-cover rounded-lg shadow-md"><div class="flex-1"><h4 class="font-bold text-gray-900 mb-1">' + book.title + '</h4><p class="text-sm text-gray-600 mb-2">' + book.author + '</p><p class="text-xs text-gray-500 mb-2">ISBN: ' + book.isbn + '</p><span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ' + (book.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') + '">' + (book.available ? '✓ Tersedia' : '✗ Dipinjam') + '</span></div></div>';
-            }).join('');
-
-            searchResults.classList.remove('hidden');
-        }
-
-        function selectBook(bookId) {
-            alert('Anda memilih buku ID: ' + bookId + '\nFitur detail buku akan tersedia di halaman terpisah.');
-        }
-
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#searchInput') && !e.target.closest('#searchResults')) {
-                searchResults.classList.add('hidden');
-            }
-        });
-
-        // Load Dashboard Stats
-        async function loadDashboardStats() {
-            try {
-                // Demo data
-                document.getElementById('borrowedCount').textContent = '3';
-                document.getElementById('waitingCount').textContent = '2';
-                document.getElementById('historyCount').textContent = '15';
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
-
-        // Navigation
-        function navigateTo(page) {
-            window.location.href = page;
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUserProfile();
-            loadDashboardStats();
-        });
-    </script>
+    <script src="<?php echo getAssetUrl('public/js/dashboard.js'); ?>"></script>
 </body>
-</html></parameter>
+</html>
