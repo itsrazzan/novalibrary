@@ -1,35 +1,48 @@
 <?php
 session_start();
+require_once __DIR__ . '/../config/helpers.php';
 
-if (isset($_POST['submit'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // load model
+    require_once __DIR__ . '/../models/validateLogin.php';
     // ambil data dari form, cegah XSS
     $username = trim(htmlspecialchars($_POST['username'], ENT_QUOTES, 'UTF-8'));
-    $password = trim(htmlspecialchars($_POST['password'], ENT_QUOTES, 'UTF-8'));
+    $password = $_POST['password'] ?? ''; // password tidak di-sanitize agar hash tetap valid
 
-    // validasi
-    if (!preg_match('/^[a-zA-Z0-9]{4,20}$/', $username)) {
-        $error = "Username: huruf/angka, 4-20 karakter!";
-    } elseif (strlen($password) < 6) {
-        $error = "Password minimal 6 karakter!";
+
+    // Validasi input
+    if (empty($username) || empty($password)) {
+        $_SESSION['error'] = "Semua field harus diisi!";
+        header("Location: " . getRedirectUrl('views/login.php'));
+        exit();
+    } elseif (!preg_match('/^[a-zA-Z0-9]{4,20}$/', $username)) {
+        $_SESSION['error'] = "Username: huruf/angka, 4-20 karakter!";
+        header("Location: " . getRedirectUrl('views/login.php'));
+        exit();
     } else {
-        require_once '../models/validateLogin.php';
-        $userData = loginCheck($username, $password); // use consistent variable name
+        $userData = loginCheck($username, $password);
 
         if ($userData && is_array($userData)) {
             // Login sukses + role handling
             $_SESSION['logged_in'] = true;
             $_SESSION['user_id'] = $userData['id'];
-            $_SESSION['status'] = $userData['status'];
+            $_SESSION['username'] = $userData['username'];
+            $_SESSION['role'] = $userData['status'];
+            // Clear any previous error
+            if (isset($_SESSION['error'])) unset($_SESSION['error']);
 
+            // Redirect berdasarkan role
             if ($userData['status'] === 'admin') {
-                header("Location: ../admin/dashboard.php");
+                header("Location: " . getRedirectUrl('views/admin/dashboard.php'));
                 exit();
-            } elseif ($userData['status'] === 'user') {
-                header("Location: ../user/dashboard.php");
+            } elseif ($userData['status'] === 'user' || $userData['status'] === 'member') {
+                header("Location: " . getRedirectUrl('views/user/dashboard.php'));
                 exit();
             }
         } else {
-            $error = "Username belum terdaftar atau password salah!";
+            $_SESSION['error'] = "Username belum terdaftar atau password salah!";
+            header("Location: " . getRedirectUrl('views/login.php'));
+            exit();
         }
     }
 }
