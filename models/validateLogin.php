@@ -1,11 +1,33 @@
-note for dhiya : 
-    perlu 3 task di file ini :
-    1.  cek apakah username ada di database
-    2.  cek apakah password sesuai dengan username di database, jika tidak sesuai return false
-    3.  jika kedua2nya sesuai, maka cek status apakah user tersebut admin atau user biasa, return status dan user id 
 <?php
-function loginCheck($username, $password) {
-    // isi logic untuk mengecek username dan password di database
+/*
+ * Login validation function
+ * Checks: 1) username exists, 2) password matches, 3) returns user status and id
+ */
+require_once __DIR__ . '/../config/database.php';
 
+function loginCheck($username, $password) {
+    $database = new Database();
+    $db = $database->getConnection();
+
+    try {
+        // Ambil data user berdasarkan username melalui function
+        $query = "SELECT * FROM get_user_for_auth(:username)";
+        $stmt = $db->prepare($query);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Validasi password menggunakan Bcrypt di sisi PHP
+        if ($user && password_verify($password, $user['hashed_password'])) {
+            // Hapus password dari array sebelum dikirim ke controller (keamanan)
+            unset($user['hashed_password']);
+            return $user;
+        }
+        
+        return false;
+    } catch (PDOException $e) {
+        return false;
+    }
 }
 ?>

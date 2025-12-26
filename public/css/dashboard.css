@@ -1,0 +1,124 @@
+/* Dashboard Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f3e8ff 100%);
+    min-height: 100vh;
+}
+
+.gradient-purple {
+    background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.card-hover {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -12px rgba(124, 58, 237, 0.35);
+}
+
+.search-box {
+    transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -8px rgba(124, 58, 237, 0.3);
+}
+
+.logo-container {
+    animation: fadeInScale 0.6s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.dashboard-card {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+.dashboard-card:nth-child(2) { animation-delay: 0.2s; }
+.dashboard-card:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-dropdown {
+    display: none;
+    animation: slideDown 0.3s ease-out;
+}
+
+.profile-dropdown.show {
+    display: block;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.search-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+    background: #7c3aed;
+    border-radius: 10px;
+}
+
+.book-result-item {
+    transition: all 0.2s ease;
+}
+
+.book-result-item:hover {
+    background: #f9fafb;
+    transform: translateX(5px);
+}

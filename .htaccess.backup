@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    # Don't rewrite if request is for controllers or models directory
+    RewriteCond %{REQUEST_URI} ^/(controllers|models|config|views)/ [OR]
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Default: redirect to public
+    RewriteRule ^$ public/ [L]
+    RewriteRule (.*) public/$1 [L]
+
+</IfModule>
