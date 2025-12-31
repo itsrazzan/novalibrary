@@ -28,6 +28,7 @@ class Book {
                     b.published_year,
                     b.image_path,
                     b.book_status,
+                    b.description,
                     c.category_id,
                     c.category_name
                   FROM " . $this->table_name . " b
@@ -59,6 +60,7 @@ class Book {
                     b.published_year,
                     b.image_path,
                     b.book_status,
+                    b.description,
                     c.category_id,
                     c.category_name,
                     c.explanation as category_explanation
@@ -77,6 +79,145 @@ class Book {
             error_log("Error in getBookById(): " . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Create a new book
+     * @param array $data
+     * @return int|false Returns book_id or false
+     */
+    public function createBook($data) {
+        $query = "INSERT INTO " . $this->table_name . " 
+                  (book_id, category_id, book_title, author, publisher, published_year, image_path, description, book_status)
+                  VALUES ((SELECT COALESCE(MAX(book_id), 0) + 1 FROM book), :category_id, :book_title, :author, :publisher, :published_year, :image_path, :description, true)
+                  RETURNING book_id";
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':category_id', $data['category_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':book_title', $data['book_title']);
+            $stmt->bindParam(':author', $data['author']);
+            
+            // Handle nullable fields
+            $publisher = !empty($data['publisher']) ? $data['publisher'] : null;
+            $published_year = !empty($data['published_year']) ? $data['published_year'] : null;
+            $description = !empty($data['description']) ? $data['description'] : null;
+            
+            $stmt->bindParam(':publisher', $publisher);
+            $stmt->bindParam(':published_year', $published_year);
+            $stmt->bindParam(':image_path', $data['image_path']);
+            $stmt->bindParam(':description', $description);
+            
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ? $result['book_id'] : false;
+        } catch (PDOException $e) {
+            // Store error for debugging
+            $this->lastError = $e->getMessage();
+            error_log("Error in createBook(): " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get last error message
+     * @return string|null
+     */
+    public function getLastError() {
+        return isset($this->lastError) ? $this->lastError : null;
+    }
+
+    /**
+     * Update a book
+     * @param int $book_id
+     * @param array $data
+     * @return bool
+     */
+    public function updateBook($book_id, $data) {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET category_id = :category_id,
+                      book_title = :book_title,
+                      author = :author,
+                      publisher = :publisher,
+                      published_year = :published_year,
+                      image_path = :image_path,
+                      description = :description
+                  WHERE book_id = :book_id";
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':book_id', $book_id, PDO::PARAM_INT);
+            $stmt->bindParam(':category_id', $data['category_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':book_title', $data['book_title']);
+            $stmt->bindParam(':author', $data['author']);
+            $stmt->bindParam(':publisher', $data['publisher']);
+            $stmt->bindParam(':published_year', $data['published_year']);
+            $stmt->bindParam(':image_path', $data['image_path']);
+            $stmt->bindParam(':description', $data['description']);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error in updateBook(): " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete a book
+     * @param int $book_id
+     * @return bool
+     */
+    public function deleteBook($book_id) {
+        $query = "DELETE FROM " . $this->table_name . " WHERE book_id = :book_id";
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':book_id', $book_id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error in deleteBook(): " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Upload book cover image
+     * @param array $file $_FILES array
+     * @return string|false Returns file path or false
+     */
+    public function uploadCover($file) {
+        $allowed_types = ['image/jpeg', 'image/png'];
+        $max_size = 5 * 1024 * 1024; // 5MB
+        
+        if (!in_array($file['type'], $allowed_types)) {
+            return false;
+        }
+        
+        if ($file['size'] > $max_size) {
+            return false;
+        }
+        
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/NOVA-Library/public/img/books/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+        
+        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = 'book_' . time() . '_' . uniqid() . '.' . $extension;
+        $filepath = $upload_dir . $filename;
+        
+        if (move_uploaded_file($file['tmp_name'], $filepath)) {
+            return 'public/img/books/' . $filename;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get default image path
+     * @return string
+     */
+    public function getDefaultImage() {
+        return $this->default_image;
     }
 
     /**

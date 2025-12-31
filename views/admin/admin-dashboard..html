@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Nova Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f3e8ff 100%);
+            min-height: 100vh;
+        }
+
+        .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-item {
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(124, 58, 237, 0.1);
+            transform: translateX(5px);
+        }
+
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            color: white;
+        }
+
+        .stat-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -12px rgba(124, 58, 237, 0.35);
+        }
+
+        .table-row {
+            transition: all 0.2s ease;
+        }
+
+        .table-row:hover {
+            background: #f9fafb;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -8px rgba(124, 58, 237, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                z-index: 40;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-white/90 backdrop-blur-lg shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <button id="mobileMenuBtn" class="md:hidden p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 gradient-purple rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xl font-bold gradient-text">Nova Academy</span>
+                            <p class="text-xs text-gray-600">Admin Panel</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button class="relative p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 gradient-purple rounded-full flex items-center justify-center shadow-lg">
+                            <span class="text-white font-bold" id="adminInitial">A</span>
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="text-sm font-semibold text-gray-900" id="adminName">Admin</p>
+                            <p class="text-xs text-purple-600">Administrator</p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="logout()" class="p-2 hover:bg-red-50 rounded-lg transition text-red-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar w-64 bg-white shadow-xl h-screen overflow-y-auto">
+            <div class="p-6">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase mb-4">Menu Utama</h3>
+                <nav class="space-y-2">
+                    <a href="#" onclick="showSection('dashboard')" class="sidebar-item active flex items-center space-x-3 px-4 py-3 rounded-xl" id="menu-dashboard">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                    <a href="#" onclick="showSection('books')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl" id="menu-books">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        <span class="font-medium">Kelola Buku</span>
+                    </a>
+                    <a href="#" onclick="showSection('categories')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl" id="menu-categories">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        <span class="font-medium">Kategori</span>
+                    </a>
+                    <a href="#" onclick="showSection('borrowing')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl" id="menu-borrowing">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        <span class="font-medium">Peminjaman</span>
+                    </a>
+                    <a href="#" onclick="showSection('return')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl" id="menu-return">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="font-medium">Pengembalian</span>
+                    </a>
+                    <a href="#" onclick="showSection('fines')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl" id="menu-fines">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="font-medium">Denda</span>
+                    </a>
+                </nav>
+
+                <h3 class="text-xs font-semibold text-gray-500 uppercase mb-4 mt-8">Lainnya</h3>
+                <nav class="space-y-2">
+                    <a href="#" onclick="showSection('members')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl" id="menu-members">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span class="font-medium">Anggota</span>
+                    </a>
+                    <a href="#" onclick="showSection('reports')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl" id="menu-reports">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span class="font-medium">Laporan</span>
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- Dashboard Section -->
+            <div id="section-dashboard" class="section-content">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard Admin</h1>
+                    <p class="text-gray-600">Selamat datang di panel admin Nova Academy Library</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">+12%</span>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-600 mb-1">Total Buku</h3>
+                        <p class="text-3xl font-bold text-gray-900" id="totalBooks">1,250</p>
+                    </div>
+
+                    <div class="stat-card bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">+8%</span>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-600 mb-1">Total Anggota</h3>
+                        <p class="text-3xl font-bold text-gray-900" id="totalMembers">450</p>
+                    </div>
+
+                    <div class="stat-card bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Active</span>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-600 mb-1">Sedang Dipinjam</h3>
+                        <p class="text-3xl font-bold text-gray-900" id="activeBorrowings">89</p>
+                    </div>
+
+                    <div class="stat-card bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">Unpaid</span>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-600 mb-1">Total Denda</h3>
+                        <p class="text-3xl font-bold text-gray-900" id="totalFines">Rp 2.500.000</p>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-900">Peminjaman Terbaru</h3>
+                            <button onclick="showSection('borrowing')" class="text-sm text-purple-600 hover:text-purple-700 font-semibold">
+                                Lihat Semua →
+                            </button>
+                        </div>
+                        <div id="recentBorrowings" class="space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">John Doe</p>
+                                    <p class="text-sm text-gray-600">Laskar Pelangi</p>
+                                </div>
+                                <span class="text-xs text-gray-500">28 Des 2024</span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Jane Smith</p>
+                                    <p class="text-sm text-gray-600">Bumi Manusia</p>
+                                </div>
+                                <span class="text-xs text-gray-500">28 Des 2024</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-900">Terlambat Dikembalikan</h3>
+                            <button onclick="showSection('return')" class="text-sm text-purple-600 hover:text-purple-700 font-semibold">
+                                Lihat Semua →
+                            </button>
+                        </div>
+                        <div id="overdueReturns" class="space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-red-50 rounded-xl border-l-4 border-red-400">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Alice Brown</p>
+                                    <p class="text-sm text-gray-600">Sang Pemimpi</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-red-600">5 hari</p>
+                                    <p class="text-xs text-gray-600">Rp 25.000</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Books Section -->
+            <div id="section-books" class="section-content hidden">
+                <div class="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Buku</h1>
+                        <p class="text-gray-600">Manage all books in the library</p>
+                    </div>
+                    <button onclick="openAddBookModal()" class="btn-primary px-6 py-3 text-white rounded-xl font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah Buku
+                    </button>
+                </div>
+
+                <!-- Search & Filter -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="relative md:col-span-2">
+                            <input 
+                                type="text" 
+                                id="searchBooks" 
+                                placeholder="Cari judul buku, penulis, atau ISBN..." 
+                                class="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                                oninput="searchBooks()"
+                            >
+                            <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <select id="filterCategory" class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition" onchange="filterBooks()">
+                            <option value="">Semua Kategori</option>
+                            <option value="Novel">Novel</option>
+                            <option value="Sejarah">Sejarah</option>
+                            <option value="Biografi">Biografi</option>
+                            <option value="Teknologi">Teknologi</option>
+                            <option value="Sains">Sains</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b-2 border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Cover</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Judul</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Penulis</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Kategori</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Stok</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="booksTableBody">
+                                <tr class="table-row border-b border-gray-100">
+                                    <td class="px-6 py-4 text-gray-600">3/5</td>
+                                    <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Tersedia</span></td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex gap-2">
+                                            <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                            </button>
+                                            <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Section -->
+            <div id="section-categories" class="section-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Kategori Buku</h1>
+                    <p class="text-gray-600">Kelola kategori perpustakaan</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100 hover:border-purple-300 transition">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Novel</h3>
+                        <p class="text-3xl font-bold text-purple-600">350</p>
+                        <p class="text-sm text-gray-600">Buku</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Borrowing Section -->
+            <div id="section-borrowing" class="section-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Peminjaman</h1>
+                    <p class="text-gray-600">Daftar peminjaman buku aktif</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b-2 border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">ID</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Anggota</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Buku</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-row border-b border-gray-100">
+                                <td class="px-6 py-4 font-semibold text-gray-900">#001</td>
+                                <td class="px-6 py-4 text-gray-900">John Doe</td>
+                                <td class="px-6 py-4 text-gray-600">Laskar Pelangi</td>
+                                <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Aktif</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Return Section -->
+            <div id="section-return" class="section-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Pengembalian Buku</h1>
+                    <p class="text-gray-600">Proses pengembalian buku anggota</p>
+                </div>
+            </div>
+
+            <!-- Fines Section -->
+            <div id="section-fines" class="section-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Denda</h1>
+                    <p class="text-gray-600">Daftar denda yang belum dibayar</p>
+                </div>
+            </div>
+
+            <!-- Members Section -->
+            <div id="section-members" class="section-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Anggota</h1>
+                    <p class="text-gray-600">Daftar semua anggota perpustakaan</p>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="section-reports" class="section-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Laporan</h1>
+                    <p class="text-gray-600">Generate dan lihat berbagai laporan</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Tambah Buku -->
+    <div id="addBookModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <h2 class="text-2xl font-bold gradient-text">Tambah Buku Baru</h2>
+                <button onclick="closeAddBookModal()" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <form id="addBookForm" onsubmit="handleAddBook(event)">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Judul Buku -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Judul Buku <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="bookTitle" 
+                                required
+                                placeholder="Masukkan judul buku"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                        </div>
+
+                        <!-- Penulis -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Penulis <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="bookAuthor" 
+                                required
+                                placeholder="Nama penulis"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                        </div>
+
+                        <!-- Penerbit -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Penerbit <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="bookPublisher" 
+                                required
+                                placeholder="Nama penerbit"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                        </div>
+
+                        <!-- ISBN -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                ISBN <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="bookISBN" 
+                                required
+                                placeholder="978-xxx-xxx-xxx"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                        </div>
+
+                        <!-- Tahun Terbit -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Tahun Terbit <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="bookYear" 
+                                required
+                                min="1900"
+                                max="2025"
+                                placeholder="2024"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                        </div>
+
+                        <!-- Kategori -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Kategori <span class="text-red-500">*</span>
+                            </label>
+                            <select 
+                                id="bookCategory" 
+                                required
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                                <option value="">Pilih Kategori</option>
+                                <option value="Novel">Novel</option>
+                                <option value="Sejarah">Sejarah</option>
+                                <option value="Biografi">Biografi</option>
+                                <option value="Teknologi">Teknologi</option>
+                                <option value="Sains">Sains</option>
+                                <option value="Agama">Agama</option>
+                                <option value="Ekonomi">Ekonomi</option>
+                                <option value="Pendidikan">Pendidikan</option>
+                            </select>
+                        </div>
+
+                        <!-- Jumlah Halaman -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Jumlah Halaman <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="bookPages" 
+                                required
+                                min="1"
+                                placeholder="250"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                        </div>
+
+                        <!-- Stok -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Jumlah Stok <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="bookStock" 
+                                required
+                                min="1"
+                                placeholder="5"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                        </div>
+
+                        <!-- Rak/Lokasi -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Rak/Lokasi <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="bookLocation" 
+                                required
+                                placeholder="Rak A-1"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                        </div>
+
+                        <!-- URL Cover Buku -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                URL Cover Buku (Optional)
+                            </label>
+                            <input 
+                                type="url" 
+                                id="bookCover" 
+                                placeholder="https://example.com/cover.jpg"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition"
+                            >
+                            <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ada, akan menggunakan cover default</p>
+                        </div>
+
+                        <!-- Deskripsi -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Deskripsi Buku
+                            </label>
+                            <textarea 
+                                id="bookDescription" 
+                                rows="4"
+                                placeholder="Tulis deskripsi singkat tentang buku..."
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 transition resize-none"
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-4 mt-6">
+                        <button 
+                            type="button" 
+                            onclick="closeAddBookModal()"
+                            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            type="submit"
+                            class="flex-1 btn-primary px-6 py-3 text-white rounded-xl font-semibold"
+                        >
+                            Simpan Buku
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Menu Toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // Show Section Function
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(function(el) {
+                el.classList.add('hidden');
+            });
+
+            // Remove active from all menu items
+            document.querySelectorAll('.sidebar-item').forEach(function(el) {
+                el.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById('section-' + section).classList.remove('hidden');
+            document.getElementById('menu-' + section).classList.add('active');
+
+            // Close mobile menu
+            document.getElementById('sidebar').classList.remove('open');
+        }
+
+        // Logout Function
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Load Admin Info on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const adminName = 'Admin';
+            const initial = adminName.charAt(0).toUpperCase();
+            
+            document.getElementById('adminInitial').textContent = initial;
+            document.getElementById('adminName').textContent = adminName;
+        });
+
+        // Search Books Function
+        function searchBooks() {
+            const searchValue = document.getElementById('searchBooks').value.toLowerCase();
+            const categoryFilter = document.getElementById('filterCategory').value.toLowerCase();
+            const rows = document.querySelectorAll('#booksTableBody tr');
+            let visibleCount = 0;
+
+            rows.forEach(function(row) {
+                const title = row.getAttribute('data-title').toLowerCase();
+                const author = row.getAttribute('data-author').toLowerCase();
+                const category = row.getAttribute('data-category').toLowerCase();
+                const isbn = row.getAttribute('data-isbn').toLowerCase();
+
+                const matchSearch = title.includes(searchValue) || 
+                                  author.includes(searchValue) || 
+                                  isbn.includes(searchValue);
+                
+                const matchCategory = categoryFilter === '' || category === categoryFilter;
+
+                if (matchSearch && matchCategory) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Show "no results" message if needed
+            if (visibleCount === 0) {
+                if (!document.getElementById('noResultsMsg')) {
+                    const tbody = document.getElementById('booksTableBody');
+                    const tr = document.createElement('tr');
+                    tr.id = 'noResultsMsg';
+                    tr.innerHTML = '<td colspan="7" class="px-6 py-8 text-center text-gray-500">Tidak ada buku yang ditemukan</td>';
+                    tbody.appendChild(tr);
+                }
+            } else {
+                const noResultsMsg = document.getElementById('noResultsMsg');
+                if (noResultsMsg) {
+                    noResultsMsg.remove();
+                }
+            }
+        }
+
+        // Filter Books by Category
+        function filterBooks() {
+            searchBooks(); // Reuse search function
+        }
+
+        // Open Add Book Modal
+        function openAddBookModal() {
+            document.getElementById('addBookModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+
+        // Close Add Book Modal
+        function closeAddBookModal() {
+            document.getElementById('addBookModal').classList.add('hidden');
+            document.getElementById('addBookForm').reset();
+            document.body.style.overflow = 'auto'; // Restore scroll
+        }
+
+        // Handle Add Book Form Submit
+        function handleAddBook(event) {
+            event.preventDefault();
+
+            // Get form values
+            const bookData = {
+                title: document.getElementById('bookTitle').value,
+                author: document.getElementById('bookAuthor').value,
+                publisher: document.getElementById('bookPublisher').value,
+                isbn: document.getElementById('bookISBN').value,
+                year: document.getElementById('bookYear').value,
+                category: document.getElementById('bookCategory').value,
+                pages: document.getElementById('bookPages').value,
+                stock: document.getElementById('bookStock').value,
+                location: document.getElementById('bookLocation').value,
+                cover: document.getElementById('bookCover').value || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100&h=150&fit=crop',
+                description: document.getElementById('bookDescription').value
+            };
+
+            console.log('Book Data:', bookData);
+
+            // In production, send to backend API
+            // await fetch('api/books/create.php', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(bookData)
+            // });
+
+            // Show success message
+            alert('✅ Buku berhasil ditambahkan!\n\nJudul: ' + bookData.title + '\nPenulis: ' + bookData.author);
+
+            // Add book to table (demo)
+            addBookToTable(bookData);
+
+            // Close modal
+            closeAddBookModal();
+        }
+
+        // Add book to table (demo function)
+        function addBookToTable(book) {
+            const tbody = document.getElementById('booksTableBody');
+            const categoryColors = {
+                'Novel': 'purple',
+                'Sejarah': 'blue',
+                'Biografi': 'green',
+                'Teknologi': 'orange',
+                'Sains': 'red'
+            };
+            
+            const color = categoryColors[book.category] || 'gray';
+            
+            const row = document.createElement('tr');
+            row.className = 'table-row border-b border-gray-100';
+            row.setAttribute('data-title', book.title.toLowerCase());
+            row.setAttribute('data-author', book.author.toLowerCase());
+            row.setAttribute('data-category', book.category);
+            row.setAttribute('data-isbn', book.isbn);
+            
+            row.innerHTML = `
+                <td class="px-6 py-4"><img src="${book.cover}" alt="${book.title}" class="w-12 h-16 object-cover rounded shadow"></td>
+                <td class="px-6 py-4 font-semibold text-gray-900">${book.title}</td>
+                <td class="px-6 py-4 text-gray-600">${book.author}</td>
+                <td class="px-6 py-4"><span class="px-3 py-1 bg-${color}-100 text-${color}-700 rounded-full text-xs font-semibold">${book.category}</span></td>
+                <td class="px-6 py-4 text-gray-600">${book.stock}/${book.stock}</td>
+                <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Tersedia</span></td>
+                <td class="px-6 py-4">
+                    <div class="flex gap-2">
+                        <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            tbody.insertBefore(row, tbody.firstChild);
+            
+            // Update total books count
+            const totalBooks = document.getElementById('totalBooks');
+            const currentTotal = parseInt(totalBooks.textContent.replace(/,/g, ''));
+            totalBooks.textContent = (currentTotal + 1).toLocaleString();
+        }
+        
+
+        // Close modal when clicking outside
+        document.getElementById('addBookModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddBookModal();
+            }
+        });
+    </script>
+</body>
+</html>px-6 py-4"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100&h=150&fit=crop" alt="Book" class="w-12 h-16 object-cover rounded shadow"></td>
+                                    <td class="px-6 py-4 font-semibold text-gray-900">Laskar Pelangi</td>
+                                    <td class="px-6 py-4 text-gray-600">Andrea Hirata</td>
+                                    <td class="px-6 py-4"><span class="px-3 py-1 bg-purple-100 +text-purple-700 rounded-full text-xs font-semibold">Novel</span></td>
+                                    <td class="     
