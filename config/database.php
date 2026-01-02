@@ -2,7 +2,7 @@
 class Database {
     private $host = "localhost";
     private $port = "5432";
-    private $db_name = "novalibrary"; // Ganti dengan DB Anda
+    private $db_name = "novalibrary1"; // Ganti dengan DB Anda
     private $username = "admin";          // Ganti dengan user DB Anda
     private $password = "BismillaH97";     // Ganti dengan password DB Anda
     public $conn;

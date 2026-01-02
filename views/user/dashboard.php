@@ -166,7 +166,7 @@ $userInitial = strtoupper(substr($userName, 0, 1));
             <div class="grid md:grid-cols-3 gap-6">
                 <!-- Buku yang Sedang Dipinjam -->
                 <div class="dashboard-card">
-                    <button onclick="navigateTo('borrowed-books.html')" class="card-hover w-full bg-white rounded-2xl shadow-lg p-8 text-left border-2 border-gray-100 hover:border-purple-300 h-full flex flex-col">
+                    <a href="<?php echo getRedirectUrl('views/user/borrowed-books.php'); ?>" class="card-hover w-full bg-white rounded-2xl shadow-lg p-8 text-left border-2 border-gray-100 hover:border-purple-300 h-full flex flex-col block">
                         <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mb-6">
                             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -181,12 +181,12 @@ $userInitial = strtoupper(substr($userName, 0, 1));
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </div>
-                    </button>
+                    </a>
                 </div>
 
                 <!-- Buku Waiting List -->
                 <div class="dashboard-card">
-                    <button onclick="navigateTo('waiting-list.html')" class="card-hover w-full bg-white rounded-2xl shadow-lg p-8 text-left border-2 border-gray-100 hover:border-purple-300 h-full flex flex-col">
+                    <a href="<?php echo getRedirectUrl('views/user/waiting-list.php'); ?>" class="card-hover w-full bg-white rounded-2xl shadow-lg p-8 text-left border-2 border-gray-100 hover:border-purple-300 h-full flex flex-col block">
                         <div class="w-16 h-16 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl flex items-center justify-center mb-6">
                             <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -201,12 +201,12 @@ $userInitial = strtoupper(substr($userName, 0, 1));
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </div>
-                    </button>
+                    </a>
                 </div>
 
                 <!-- Riwayat Peminjaman -->
                 <div class="dashboard-card">
-                    <button onclick="navigateTo('history.html')" class="card-hover w-full bg-white rounded-2xl shadow-lg p-8 text-left border-2 border-gray-100 hover:border-purple-300 h-full flex flex-col">
+                    <a href="<?php echo getRedirectUrl('views/user/history.php'); ?>" class="card-hover w-full bg-white rounded-2xl shadow-lg p-8 text-left border-2 border-gray-100 hover:border-purple-300 h-full flex flex-col block">
                         <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-teal-100 rounded-2xl flex items-center justify-center mb-6">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -221,7 +221,7 @@ $userInitial = strtoupper(substr($userName, 0, 1));
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </div>
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
