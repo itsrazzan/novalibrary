@@ -99,15 +99,22 @@ function loadRecentBorrowings() {
         .then(result => {
             const container = document.getElementById('recentBorrowings');
             if (result.success && result.data.length > 0) {
-                container.innerHTML = result.data.map(item => `
+                container.innerHTML = result.data.map(item => {
+                    const borrowerName = item.borrower_name || item.borrower_username || 'Unknown';
+                    return `
                     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition">
-                        <div class="flex-1">
-                            <p class="font-semibold text-gray-900">${item.book_title}</p>
-                            <p class="text-sm text-gray-600">${item.author}</p>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                <span class="text-purple-600 font-semibold text-sm">${borrowerName.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">${item.book_title}</p>
+                                <p class="text-sm text-gray-600">oleh ${borrowerName}</p>
+                            </div>
                         </div>
                         <span class="text-xs text-gray-500">${formatDate(item.loan_date)}</span>
                     </div>
-                `).join('');
+                `}).join('');
             } else {
                 container.innerHTML = '<p class="text-gray-500 text-center py-4">Tidak ada peminjaman aktif</p>';
             }
@@ -432,18 +439,28 @@ function loadBorrowings() {
         .then(result => {
             const tbody = document.getElementById('borrowingsTableBody');
             if (result.success && result.data.length > 0) {
-                tbody.innerHTML = result.data.map((item, index) => `
+                tbody.innerHTML = result.data.map((item, index) => {
+                    const borrowerName = item.borrower_name || item.borrower_username || 'Unknown';
+                    return `
                     <tr class="table-row border-b border-gray-100">
                         <td class="px-6 py-4 font-semibold text-gray-900">#${String(item.loan_id).padStart(3, '0')}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span class="text-purple-600 font-semibold text-sm">${borrowerName.charAt(0).toUpperCase()}</span>
+                                </div>
+                                <span class="text-gray-900">${borrowerName}</span>
+                            </div>
+                        </td>
                         <td class="px-6 py-4 text-gray-900">${item.book_title}</td>
                         <td class="px-6 py-4 text-gray-600">${item.author || '-'}</td>
                         <td class="px-6 py-4 text-gray-600">${formatDate(item.loan_date)}</td>
                         <td class="px-6 py-4 text-gray-600">${formatDate(item.due_date)}</td>
                         <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Aktif</span></td>
                     </tr>
-                `).join('');
+                `}).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Tidak ada peminjaman aktif</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">Tidak ada peminjaman aktif</td></tr>';
             }
         })
         .catch(error => console.error('Error loading borrowings:', error));
@@ -460,9 +477,18 @@ function loadReturns() {
                 tbody.innerHTML = result.data.map(item => {
                     const statusColor = item.was_overdue ? 'red' : 'green';
                     const statusText = item.was_overdue ? `Terlambat ${item.days_late} hari` : 'Tepat waktu';
+                    const borrowerName = item.borrower_name || item.borrower_username || 'Unknown';
                     return `
                         <tr class="table-row border-b border-gray-100">
                             <td class="px-6 py-4 font-semibold text-gray-900">#${String(item.return_id).padStart(3, '0')}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <span class="text-purple-600 font-semibold text-sm">${borrowerName.charAt(0).toUpperCase()}</span>
+                                    </div>
+                                    <span class="text-gray-900">${borrowerName}</span>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 text-gray-900">${item.book_title}</td>
                             <td class="px-6 py-4 text-gray-600">${formatDate(item.loan_date)}</td>
                             <td class="px-6 py-4 text-gray-600">${formatDate(item.return_date)}</td>
@@ -471,7 +497,7 @@ function loadReturns() {
                     `;
                 }).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Tidak ada data pengembalian</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Tidak ada data pengembalian</td></tr>';
             }
         })
         .catch(error => console.error('Error loading returns:', error));

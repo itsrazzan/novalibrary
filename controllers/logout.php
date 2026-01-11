@@ -4,6 +4,9 @@
  * Destroys session and redirects to login page
  */
 
+// Load secure session configuration BEFORE session_start
+require_once __DIR__ . '/../config/session_config.php';
+
 // Start session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

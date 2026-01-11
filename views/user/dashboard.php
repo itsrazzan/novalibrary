@@ -5,6 +5,9 @@
  * Requires: Member session authentication
  */
 
+// Load secure session configuration BEFORE session_start
+require_once __DIR__ . '/../../config/session_config.php';
+
 // Start session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -128,18 +131,32 @@ $userInitial = strtoupper(substr($userName, 0, 1));
             <!-- Search Book Section -->
             <div class="mb-12">
                 <div class="relative">
-                    <div class="search-box relative bg-white rounded-2xl shadow-lg border-2 border-gray-200 overflow-hidden">
-                        <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
+                    <!-- Search Box with Browse Button -->
+                    <div class="flex gap-3 mb-2">
+                        <div class="search-box flex-1 relative bg-white rounded-2xl shadow-lg border-2 border-gray-200 overflow-hidden">
+                            <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <input 
+                                type="text" 
+                                id="searchInput"
+                                placeholder="Cari buku berdasarkan judul, penulis, atau kategori..."
+                                class="w-full pl-16 pr-6 py-5 text-lg focus:outline-none focus:border-purple-500 border-2 border-transparent transition-all rounded-2xl"
+                            >
                         </div>
-                        <input 
-                            type="text" 
-                            id="searchInput"
-                            placeholder="Cari buku berdasarkan judul, penulis, atau ISBN..."
-                            class="w-full pl-16 pr-6 py-5 text-lg focus:outline-none focus:border-purple-500 border-2 border-transparent transition-all rounded-2xl"
+                        <!-- Browse All Books Button -->
+                        <button 
+                            id="browseAllBtn"
+                            onclick="loadAllBooks()"
+                            class="px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-2xl shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center gap-2 whitespace-nowrap"
                         >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                            <span class="hidden sm:inline">Lihat Semua</span>
+                        </button>
                     </div>
 
                     <!-- Search Results Dropdown -->
@@ -226,6 +243,97 @@ $userInitial = strtoupper(substr($userName, 0, 1));
             </div>
         </div>
     </main>
+
+    <!-- Book Detail Modal -->
+    <div id="bookDetailModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-fade-in">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-3xl">
+                <h2 class="text-xl font-bold text-gray-900">Detail Buku</h2>
+                <button onclick="closeBookModal()" class="p-2 hover:bg-gray-100 rounded-xl transition">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-6">
+                <!-- Book Cover & Basic Info -->
+                <div class="flex flex-col md:flex-row gap-6 mb-6">
+                    <div class="flex-shrink-0">
+                        <img id="modalBookCover" src="" alt="Book Cover" 
+                             class="w-40 h-56 object-cover rounded-xl shadow-lg mx-auto md:mx-0"
+                             onerror="this.src='/NOVA-Library/public/img/books/default-book.jpg'">
+                    </div>
+                    <div class="flex-1">
+                        <h3 id="modalBookTitle" class="text-2xl font-bold text-gray-900 mb-2"></h3>
+                        <p id="modalBookAuthor" class="text-lg text-gray-600 mb-4"></p>
+                        
+                        <!-- Status Badge -->
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span id="modalBookStatus" class="px-4 py-1 rounded-full text-sm font-semibold"></span>
+                            <span id="modalBookCategory" class="px-4 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-700"></span>
+                        </div>
+                        
+                        <!-- Book Details Grid -->
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-500">Penerbit</p>
+                                <p id="modalBookPublisher" class="font-semibold text-gray-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Tahun Terbit</p>
+                                <p id="modalBookYear" class="font-semibold text-gray-900">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sinopsis -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Sinopsis</h4>
+                    <p id="modalBookSinopsis" class="text-gray-600 leading-relaxed">Tidak ada sinopsis.</p>
+                </div>
+                
+                <!-- Waiting List Info (hidden by default) -->
+                <div id="modalWaitingInfo" class="hidden mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                    <div class="flex items-center gap-2 text-orange-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span id="modalWaitingText" class="font-semibold"></span>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-3">
+                    <button id="modalBorrowBtn" onclick="borrowFromModal()" class="flex-1 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-indigo-700 transition hidden">
+                        Pinjam Buku
+                    </button>
+                    <button id="modalWaitingBtn" onclick="addToWaitingListFromModal()" class="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 transition hidden">
+                        Masuk Waiting List
+                    </button>
+                    <button id="modalAlreadyWaitingBtn" class="flex-1 py-3 bg-gray-200 text-gray-600 font-semibold rounded-xl cursor-not-allowed hidden">
+                        Sudah di Waiting List
+                    </button>
+                    <button onclick="closeBookModal()" class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+    </style>
 
     <script src="<?php echo getAssetUrl('public/js/dashboard.js'); ?>"></script>
 </body>

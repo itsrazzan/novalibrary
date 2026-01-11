@@ -41,10 +41,12 @@ if (!$userId) {
 
 // Fetch borrowed books and penalties from database
 $borrowedBooks = [];
+$unpaidPenalties = [];
 $totalBorrowed = 0;
 $dueToday = 0;
 $overdue = 0;
 $totalPenalty = 0;
+$unpaidTotal = 0;
 
 try {
     $database = new Database();
@@ -57,8 +59,17 @@ try {
         $borrowedBooks = $bookLending->getActiveBorrowingsByUser($userId);
         $totalBorrowed = count($borrowedBooks);
         
-        // Get total penalty for user
+        // Get total penalty for user (from penalty table)
         $totalPenalty = $bookLending->getTotalPenaltyByUser($userId);
+        
+        // Get unpaid penalties
+        $stmt = $conn->prepare("SELECT penalty_id, large_fines, paid, paid_date FROM penalty WHERE id = :user_id AND (paid = false OR paid IS NULL) ORDER BY penalty_id DESC");
+        $stmt->execute([':user_id' => $userId]);
+        $unpaidPenalties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($unpaidPenalties as $pen) {
+            $unpaidTotal += $pen['large_fines'];
+        }
         
         // Calculate due today, overdue, and current penalties
         $today = date('Y-m-d');
@@ -67,7 +78,6 @@ try {
                 $dueToday++;
             } elseif ($book['due_date'] < $today) {
                 $overdue++;
-                $totalPenalty += $book['penalty_amount'];
             }
         }
     }
@@ -276,8 +286,28 @@ function getProgressColor($progress) {
                     </div>
                     <div class="ml-4 flex-1">
                         <h3 class="text-lg font-bold text-red-800 mb-1">⚠️ Anda Memiliki Denda!</h3>
-                        <p class="text-red-700 mb-2">Total denda keterlambatan: <span class="font-bold text-xl">Rp <?php echo number_format($totalPenalty, 0, ',', '.'); ?></span></p>
-                        <p class="text-sm text-red-600">Denda dihitung Rp 2.000 per hari keterlambatan. Segera kembalikan buku untuk menghindari denda yang lebih besar.</p>
+                        <p class="text-red-700 mb-2">Total denda belum dibayar: <span class="font-bold text-xl">Rp <?php echo number_format($unpaidTotal, 0, ',', '.'); ?></span></p>
+                        <p class="text-sm text-red-600 mb-4">Denda dihitung Rp 2.000 per hari keterlambatan.</p>
+                        
+                        <?php if (!empty($unpaidPenalties)): ?>
+                        <div class="bg-white/50 rounded-lg p-4">
+                            <h4 class="font-semibold text-red-800 mb-2">Daftar Denda:</h4>
+                            <div class="space-y-2">
+                                <?php foreach ($unpaidPenalties as $penalty): ?>
+                                <div class="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm">
+                                    <span class="font-medium text-gray-700">Denda #<?php echo $penalty['penalty_id']; ?></span>
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-bold text-red-600">Rp <?php echo number_format($penalty['large_fines'], 0, ',', '.'); ?></span>
+                                        <button onclick="payPenalty(<?php echo $penalty['penalty_id']; ?>, <?php echo $penalty['large_fines']; ?>)" 
+                                                class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition">
+                                            Bayar
+                                        </button>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -404,15 +434,64 @@ function getProgressColor($progress) {
     <script>
         function extendLoan(loanId) {
             if (confirm('Apakah Anda yakin ingin memperpanjang peminjaman buku ini?')) {
-                // TODO: Integrate with backend API
+                // TODO: Implement extend loan feature
                 alert('Fitur perpanjangan akan segera tersedia.\nLoan ID: ' + loanId);
             }
         }
 
-        function returnBook(loanId) {
-            if (confirm('Apakah Anda yakin ingin mengembalikan buku ini?')) {
-                // TODO: Integrate with backend API
-                alert('Fitur pengembalian akan segera tersedia.\nLoan ID: ' + loanId);
+        async function returnBook(loanId) {
+            if (!confirm('Apakah Anda yakin ingin mengembalikan buku ini?')) return;
+            
+            try {
+                const formData = new FormData();
+                formData.append('loan_id', loanId);
+                
+                const response = await fetch('../../controllers/ReturnController.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.has_penalty) {
+                        alert('⚠️ ' + result.message);
+                    } else {
+                        alert('✅ ' + result.message);
+                    }
+                    location.reload(); // Refresh page to show updated list
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                console.error('Return error:', error);
+                alert('❌ Terjadi kesalahan saat mengembalikan buku');
+            }
+        }
+
+        async function payPenalty(penaltyId, amount) {
+            if (!confirm('Bayar denda sebesar Rp ' + amount.toLocaleString('id-ID') + '?')) return;
+            
+            try {
+                const formData = new FormData();
+                formData.append('penalty_id', penaltyId);
+                
+                const response = await fetch('../../controllers/PaymentController.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ ' + result.message);
+                    location.reload();
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('❌ Terjadi kesalahan saat membayar denda');
             }
         }
     </script>

@@ -19,14 +19,18 @@ class BookLending {
         $query = "SELECT 
                     bl.loan_id,
                     bl.book_id,
+                    bl.id as user_id,
                     bl.loan_date,
                     bl.due_date,
                     bl.return_date,
                     b.book_title,
                     b.author,
-                    b.image_path
+                    b.image_path,
+                    u.username as borrower_username,
+                    u.name as borrower_name
                   FROM " . $this->table_name . " bl
                   INNER JOIN book b ON bl.book_id = b.book_id
+                  LEFT JOIN username u ON bl.id = u.id
                   WHERE bl.return_date IS NULL
                   ORDER BY bl.loan_date DESC";
         
@@ -153,12 +157,16 @@ class BookLending {
         $query = "SELECT 
                     bl.loan_id,
                     bl.book_id,
+                    bl.id as user_id,
                     bl.loan_date,
                     bl.due_date,
                     b.book_title,
-                    b.author
+                    b.author,
+                    u.username as borrower_username,
+                    u.name as borrower_name
                   FROM " . $this->table_name . " bl
                   INNER JOIN book b ON bl.book_id = b.book_id
+                  LEFT JOIN username u ON bl.id = u.id
                   WHERE bl.return_date IS NULL
                   ORDER BY bl.loan_date DESC
                   LIMIT :limit";
@@ -315,29 +323,41 @@ class BookLending {
      * @return int|false loan_id or false
      */
     public function createLoan($userId, $bookId, $durationDays = 14) {
+        // PostgreSQL requires explicit INTERVAL cast for date arithmetic
         $query = "INSERT INTO " . $this->table_name . " 
                   (loan_id, id, book_id, loan_date, due_date)
                   VALUES (
                     (SELECT COALESCE(MAX(loan_id), 0) + 1 FROM booklending),
-                    :user_id, :book_id, CURRENT_DATE, CURRENT_DATE + :duration
+                    :user_id, :book_id, CURRENT_DATE, CURRENT_DATE + INTERVAL '" . (int)$durationDays . " days'
                   )
                   RETURNING loan_id";
         
         try {
+            $this->conn->beginTransaction();
+            
+            // Insert loan
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
             $stmt->bindParam(':book_id', $bookId, PDO::PARAM_INT);
-            $stmt->bindParam(':duration', $durationDays, PDO::PARAM_INT);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($result) {
+                // Update book status to unavailable
+                $updateStmt = $this->conn->prepare("UPDATE book SET book_status = false WHERE book_id = :book_id");
+                $updateStmt->execute([':book_id' => $bookId]);
+                
+                $this->conn->commit();
+                
                 // Refresh materialized view
                 $this->refreshMV('mv_statistik_member');
                 return $result['loan_id'];
             }
+            
+            $this->conn->rollBack();
             return false;
         } catch (PDOException $e) {
+            $this->conn->rollBack();
             error_log("Error in createLoan(): " . $e->getMessage());
             return false;
         }
@@ -352,6 +372,137 @@ class BookLending {
             $this->conn->exec("REFRESH MATERIALIZED VIEW {$mvName}");
         } catch (PDOException $e) {
             error_log("Error refreshing MV {$mvName}: " . $e->getMessage());
+        }
+    }
+
+    // ===== WAITING LIST METHODS =====
+
+    /**
+     * Add user to waiting list for a book
+     * @param int $userId
+     * @param int $bookId
+     * @return int|false waiting_id or false
+     */
+    public function addToWaitingList($userId, $bookId) {
+        // Check if already in waiting list
+        if ($this->checkUserInWaitingList($userId, $bookId)) {
+            $this->lastError = 'Already in waiting list';
+            return false;
+        }
+        
+        $query = "INSERT INTO waiting_list (id, book_id, request_date)
+                  VALUES (:user_id, :book_id, CURRENT_DATE)
+                  RETURNING waiting_id";
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':book_id', $bookId, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($result) {
+                return $result['waiting_id'];
+            }
+            
+            $this->lastError = 'Insert returned no data';
+            return false;
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+            error_log("Error in addToWaitingList(): " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Remove user from waiting list
+     * @param int $userId
+     * @param int $bookId
+     * @return bool
+     */
+    public function removeFromWaitingList($userId, $bookId) {
+        $query = "DELETE FROM waiting_list 
+                  WHERE id = :user_id AND book_id = :book_id";
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':book_id', $bookId, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error in removeFromWaitingList(): " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Check if user is already in waiting list for a book
+     * @param int $userId
+     * @param int $bookId
+     * @return bool
+     */
+    public function checkUserInWaitingList($userId, $bookId) {
+        $query = "SELECT COUNT(*) as count FROM waiting_list 
+                  WHERE id = :user_id AND book_id = :book_id";
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':book_id', $bookId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int) $row['count'] > 0;
+        } catch (PDOException $e) {
+            error_log("Error in checkUserInWaitingList(): " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get user's position in waiting list for a book
+     * @param int $userId
+     * @param int $bookId
+     * @return int Position (1-based) or 0 if not in list
+     */
+    public function getWaitingPosition($userId, $bookId) {
+        $query = "SELECT COUNT(*) as position FROM waiting_list 
+                  WHERE book_id = :book_id 
+                  AND request_date <= (
+                      SELECT request_date FROM waiting_list 
+                      WHERE id = :user_id AND book_id = :book_id2
+                  )";
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':book_id', $bookId, PDO::PARAM_INT);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':book_id2', $bookId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int) $row['position'];
+        } catch (PDOException $e) {
+            error_log("Error in getWaitingPosition(): " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Get total queue count for a book
+     * @param int $bookId
+     * @return int
+     */
+    public function getWaitingCount($bookId) {
+        $query = "SELECT COUNT(*) as count FROM waiting_list WHERE book_id = :book_id";
+        
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':book_id', $bookId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int) $row['count'];
+        } catch (PDOException $e) {
+            error_log("Error in getWaitingCount(): " . $e->getMessage());
+            return 0;
         }
     }
 }
