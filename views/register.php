@@ -1,9 +1,14 @@
 <?php 
-// Start session untuk menampilkan error/success messages
+// Load secure session configuration BEFORE session_start
+require_once __DIR__ . '/../config/session_config.php';
 session_start();
 
 // Load helper functions
 require_once __DIR__ . '/../config/helpers.php';
+
+// Redirect ke dashboard jika sudah login
+// User tidak perlu register lagi jika sudah punya akun aktif
+redirectIfLoggedIn();
 ?>
 <!DOCTYPE html>
 <html lang="id">

@@ -1,5 +1,36 @@
 <?php
-// Admin Dashboard - Nova Library
+/**
+ * Admin Dashboard - Nova Library
+ * Requires: Admin session authentication
+ */
+
+// Load secure session configuration BEFORE session_start
+require_once __DIR__ . '/../../config/session_config.php';
+
+// Start session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Include helpers
+require_once __DIR__ . '/../../config/helpers.php';
+
+// Check if user is logged in
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: ' . getRedirectUrl('views/login.php'));
+    exit;
+}
+
+// Check if user is admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    // Not admin, redirect to user dashboard or login
+    header('Location: ' . getRedirectUrl('views/login.php'));
+    exit;
+}
+
+// Get admin info
+$adminName = $_SESSION['username'] ?? 'Admin';
+$adminInitial = strtoupper(substr($adminName, 0, 1));
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -45,10 +76,10 @@
                     
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 gradient-purple rounded-full flex items-center justify-center shadow-lg">
-                            <span class="text-white font-bold" id="adminInitial">A</span>
+                            <span class="text-white font-bold"><?php echo $adminInitial; ?></span>
                         </div>
                         <div class="hidden md:block">
-                            <p class="text-sm font-semibold text-gray-900" id="adminName">Admin</p>
+                            <p class="text-sm font-semibold text-gray-900"><?php echo htmlspecialchars($adminName); ?></p>
                             <p class="text-xs text-purple-600">Administrator</p>
                         </div>
                     </div>

@@ -1,6 +1,6 @@
 /**
  * Dashboard JavaScript
- * Handles user profile, logout, book search, and navigation
+ * Handles user profile, logout, book search, borrow, and navigation
  */
 
 // ===== Profile Dropdown =====
@@ -58,22 +58,15 @@ if (searchInput) {
  */
 async function searchBooks(query) {
     try {
-        // Use relative path from user dashboard location
         const searchUrl = '../../controllers/SearchController.php?q=' + encodeURIComponent(query) + '&limit=10';
-        console.log('Searching:', searchUrl);
-        
         const response = await fetch(searchUrl);
-        console.log('Response status:', response.status);
         
-        if (!response.ok) throw new Error('Search failed with status: ' + response.status);
+        if (!response.ok) throw new Error('Search failed');
         
         const result = await response.json();
-        console.log('Search result:', result);
-        
         if (result.success) {
             displaySearchResults(result.data);
         } else {
-            console.log('Search not successful:', result.message);
             displaySearchResults([]);
         }
     } catch (error) {
@@ -83,7 +76,7 @@ async function searchBooks(query) {
 }
 
 /**
- * Display search results
+ * Display search results with borrow button
  * @param {Array} books - Array of book objects
  */
 function displaySearchResults(books) {
@@ -99,7 +92,14 @@ function displaySearchResults(books) {
         const isAvailable = book.book_status === true || book.book_status === 't' || book.book_status === 1;
         const imagePath = book.image_url || book.image_path || '/NOVA-Library/public/img/books/default-book.jpg';
         
-        return `<div class="book-result-item flex items-start space-x-4 p-4 rounded-xl cursor-pointer mb-2 hover:bg-purple-50 transition">
+        const borrowBtn = isAvailable 
+            ? `<button onclick="borrowBook(${book.book_id}, '${book.book_title.replace(/'/g, "\\'")}')" 
+                       class="ml-2 px-3 py-1 bg-purple-600 text-white rounded-full text-xs font-semibold hover:bg-purple-700 transition">
+                   Pinjam
+               </button>`
+            : '';
+        
+        return `<div class="book-result-item flex items-start space-x-4 p-4 rounded-xl mb-2 hover:bg-purple-50 transition">
                     <img src="${imagePath.startsWith('/') ? imagePath : '/NOVA-Library/' + imagePath}" 
                          alt="${book.book_title}" 
                          class="w-12 h-16 object-cover rounded shadow"
@@ -108,14 +108,50 @@ function displaySearchResults(books) {
                         <h4 class="font-bold text-gray-900 mb-1">${book.book_title}</h4>
                         <p class="text-sm text-gray-600 mb-2">Oleh: ${book.author || 'Unknown'}</p>
                         <p class="text-xs text-gray-500 mb-2">${book.category_name || 'Umum'}</p>
-                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${isAvailable ? '✓ Tersedia' : '✗ Dipinjam'}
-                        </span>
+                        <div class="flex items-center">
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                ${isAvailable ? '✓ Tersedia' : '✗ Dipinjam'}
+                            </span>
+                            ${borrowBtn}
+                        </div>
                     </div>
                 </div>`;
     }).join('');
 
     searchResults.classList.remove('hidden');
+}
+
+/**
+ * Borrow a book
+ * @param {number} bookId
+ * @param {string} bookTitle
+ */
+async function borrowBook(bookId, bookTitle) {
+    if (!confirm(`Pinjam buku "${bookTitle}"?`)) return;
+    
+    try {
+        const formData = new FormData();
+        formData.append('book_id', bookId);
+        
+        const response = await fetch('../../controllers/BorrowController.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message + '\nJatuh tempo: ' + result.due_date);
+            searchResults.classList.add('hidden');
+            searchInput.value = '';
+            loadDashboardStats(); // Refresh stats
+        } else {
+            alert('❌ ' + result.message);
+        }
+    } catch (error) {
+        console.error('Borrow error:', error);
+        alert('❌ Terjadi kesalahan saat meminjam buku');
+    }
 }
 
 // Close search results when clicking outside
@@ -128,16 +164,21 @@ document.addEventListener('click', function(e) {
 // ===== Dashboard Stats =====
 async function loadDashboardStats() {
     try {
-        // TODO: Create a proper stats controller
-        // For now, just set default values to avoid 404 errors
+        const response = await fetch('../../controllers/UserStatsController.php');
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('borrowedCount').textContent = result.borrowed;
+            document.getElementById('waitingCount').textContent = result.waiting;
+            document.getElementById('historyCount').textContent = result.history;
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
         document.getElementById('borrowedCount').textContent = '-';
         document.getElementById('waitingCount').textContent = '-';
         document.getElementById('historyCount').textContent = '-';
-    } catch (error) {
-        console.error('Error loading stats:', error);
-        document.getElementById('borrowedCount').textContent = '0';
-        document.getElementById('waitingCount').textContent = '0';
-        document.getElementById('historyCount').textContent = '0';
     }
 }
 

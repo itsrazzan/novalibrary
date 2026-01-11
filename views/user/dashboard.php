@@ -5,6 +5,9 @@
  * Requires: Member session authentication
  */
 
+// Load secure session configuration BEFORE session_start
+require_once __DIR__ . '/../../config/session_config.php';
+
 // Start session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

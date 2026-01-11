@@ -1,5 +1,12 @@
-<?php session_start();
+<?php 
+// Load secure session configuration BEFORE session_start
+require_once __DIR__ . '/../config/session_config.php';
+session_start();
 require_once __DIR__ . '/../config/helpers.php';
+
+// OPSI A: Redirect ke dashboard jika sudah login
+// Mencegah akses halaman login jika user sudah terautentikasi
+redirectIfLoggedIn();
 ?>
 <!DOCTYPE html>
 <html lang="id">

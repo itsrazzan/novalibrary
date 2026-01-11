@@ -315,29 +315,41 @@ class BookLending {
      * @return int|false loan_id or false
      */
     public function createLoan($userId, $bookId, $durationDays = 14) {
+        // PostgreSQL requires explicit INTERVAL cast for date arithmetic
         $query = "INSERT INTO " . $this->table_name . " 
                   (loan_id, id, book_id, loan_date, due_date)
                   VALUES (
                     (SELECT COALESCE(MAX(loan_id), 0) + 1 FROM booklending),
-                    :user_id, :book_id, CURRENT_DATE, CURRENT_DATE + :duration
+                    :user_id, :book_id, CURRENT_DATE, CURRENT_DATE + INTERVAL '" . (int)$durationDays . " days'
                   )
                   RETURNING loan_id";
         
         try {
+            $this->conn->beginTransaction();
+            
+            // Insert loan
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
             $stmt->bindParam(':book_id', $bookId, PDO::PARAM_INT);
-            $stmt->bindParam(':duration', $durationDays, PDO::PARAM_INT);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($result) {
+                // Update book status to unavailable
+                $updateStmt = $this->conn->prepare("UPDATE book SET book_status = false WHERE book_id = :book_id");
+                $updateStmt->execute([':book_id' => $bookId]);
+                
+                $this->conn->commit();
+                
                 // Refresh materialized view
                 $this->refreshMV('mv_statistik_member');
                 return $result['loan_id'];
             }
+            
+            $this->conn->rollBack();
             return false;
         } catch (PDOException $e) {
+            $this->conn->rollBack();
             error_log("Error in createLoan(): " . $e->getMessage());
             return false;
         }

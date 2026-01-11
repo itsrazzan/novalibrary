@@ -1,6 +1,11 @@
 <?php
+// Load secure session configuration BEFORE session_start
+require_once __DIR__ . '/../config/session_config.php';
 session_start();
 require_once __DIR__ . '/../config/helpers.php';
+
+// Cek jika user sudah login, redirect ke dashboard
+redirectIfLoggedIn();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // load model
@@ -23,11 +28,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $userData = loginCheck($username, $password);
 
         if ($userData && is_array($userData)) {
+            // SECURITY: Regenerate session ID untuk prevent session fixation
+            regenerateSessionSecurely();
+            
             // Login sukses + role handling
             $_SESSION['logged_in'] = true;
             $_SESSION['user_id'] = $userData['id'];
             $_SESSION['username'] = $userData['username'];
             $_SESSION['role'] = $userData['status'];
+            $_SESSION['login_time'] = time(); // Track waktu login
+            
             // Clear any previous error
             if (isset($_SESSION['error'])) unset($_SESSION['error']);
 
