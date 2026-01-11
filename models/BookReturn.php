@@ -22,11 +22,14 @@ class BookReturn {
                     br.return_date,
                     br.penalty_id,
                     bl.book_id,
+                    bl.id as user_id,
                     bl.loan_date,
                     bl.due_date,
                     b.book_title,
                     b.author,
                     b.image_path,
+                    u.username as borrower_username,
+                    u.name as borrower_name,
                     CASE 
                         WHEN br.return_date > bl.due_date THEN true 
                         ELSE false 
@@ -39,6 +42,7 @@ class BookReturn {
                   FROM " . $this->table_name . " br
                   INNER JOIN booklending bl ON br.loan_id = bl.loan_id
                   INNER JOIN book b ON bl.book_id = b.book_id
+                  LEFT JOIN username u ON bl.id = u.id
                   ORDER BY br.return_date DESC";
         
         try {

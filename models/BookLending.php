@@ -19,14 +19,18 @@ class BookLending {
         $query = "SELECT 
                     bl.loan_id,
                     bl.book_id,
+                    bl.id as user_id,
                     bl.loan_date,
                     bl.due_date,
                     bl.return_date,
                     b.book_title,
                     b.author,
-                    b.image_path
+                    b.image_path,
+                    u.username as borrower_username,
+                    u.name as borrower_name
                   FROM " . $this->table_name . " bl
                   INNER JOIN book b ON bl.book_id = b.book_id
+                  LEFT JOIN username u ON bl.id = u.id
                   WHERE bl.return_date IS NULL
                   ORDER BY bl.loan_date DESC";
         
@@ -153,12 +157,16 @@ class BookLending {
         $query = "SELECT 
                     bl.loan_id,
                     bl.book_id,
+                    bl.id as user_id,
                     bl.loan_date,
                     bl.due_date,
                     b.book_title,
-                    b.author
+                    b.author,
+                    u.username as borrower_username,
+                    u.name as borrower_name
                   FROM " . $this->table_name . " bl
                   INNER JOIN book b ON bl.book_id = b.book_id
+                  LEFT JOIN username u ON bl.id = u.id
                   WHERE bl.return_date IS NULL
                   ORDER BY bl.loan_date DESC
                   LIMIT :limit";

@@ -300,6 +300,7 @@ $adminInitial = strtoupper(substr($adminName, 0, 1));
                             <thead class="bg-gray-50 border-b-2 border-gray-200">
                                 <tr>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">ID</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Peminjam</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Judul Buku</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Penulis</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Tgl Pinjam</th>
@@ -308,7 +309,7 @@ $adminInitial = strtoupper(substr($adminName, 0, 1));
                                 </tr>
                             </thead>
                             <tbody id="borrowingsTableBody">
-                                <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Memuat data...</td></tr>
+                                <tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">Memuat data...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -328,6 +329,7 @@ $adminInitial = strtoupper(substr($adminName, 0, 1));
                             <thead class="bg-gray-50 border-b-2 border-gray-200">
                                 <tr>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">ID</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Peminjam</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Judul Buku</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Tgl Pinjam</th>
                                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Tgl Kembali</th>
@@ -335,7 +337,7 @@ $adminInitial = strtoupper(substr($adminName, 0, 1));
                                 </tr>
                             </thead>
                             <tbody id="returnsTableBody">
-                                <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Memuat data...</td></tr>
+                                <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Memuat data...</td></tr>
                             </tbody>
                         </table>
                     </div>
