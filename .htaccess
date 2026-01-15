@@ -1,0 +1,34 @@
+# =============================================
+# NOVA Library - .htaccess Configuration
+# =============================================
+
+# Enable mod_rewrite
+RewriteEngine On
+
+# Redirect root to views/index.html
+RewriteRule ^$ views/index.html [L]
+
+# Set default directory index
+DirectoryIndex index.html index.php
+
+# Disable directory listing
+Options -Indexes
+
+# =============================================
+# PROTECT SENSITIVE FILES
+# =============================================
+
+# Block access to config files
+<FilesMatch "\.(ini|log|sql|env)$">
+    Require all denied
+</FilesMatch>
+
+# Block access to config folder
+<IfModule mod_rewrite.c>
+    RewriteRule ^config/ - [F,L]
+</IfModule>
+
+# Block access to .htaccess itself
+<Files .htaccess>
+    Require all denied
+</Files>
