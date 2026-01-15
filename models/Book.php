@@ -240,7 +240,7 @@ class Book {
 
     /**
      * Get default image path
-     * @return string
+     * @return stringg
      */
     public function getDefaultImage() {
         return $this->default_image;
